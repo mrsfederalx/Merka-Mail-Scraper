@@ -9,16 +9,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps
-COPY requirements.txt .
+# Install Python deps (build context = proje kökü)
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Playwright + Chromium
 RUN playwright install chromium
 RUN playwright install-deps chromium
 
-# Copy application
-COPY . .
+# Copy backend package (imports: from backend.xxx)
+COPY backend/ ./backend/
 
 EXPOSE 8000
 

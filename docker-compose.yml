@@ -1,13 +1,34 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: merkamail-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: merkamail
+      POSTGRES_USER: merka
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-merkapass123}
+    volumes:
+      - merkamail-postgres:/var/lib/postgresql/data
+    networks:
+      - merkamail-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U merka -d merkamail"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: merkamail-backend
     restart: unless-stopped
     env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
-      - merkamail-data:/app/data
+      - merkamail-data:/app/backend/data
     networks:
       - dokploy-network
       - merkamail-internal
@@ -28,17 +49,18 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.merkamail.rule=Host(`merkamail.yourdomain.com`)"
+      - "traefik.http.routers.merkamail.rule=Host(`merka.153-92-222-204.traefik.me`)"
       - "traefik.http.routers.merkamail.entrypoints=websecure"
       - "traefik.http.routers.merkamail.tls.certresolver=letsencrypt"
       - "traefik.http.services.merkamail.loadbalancer.server.port=80"
-      - "traefik.http.routers.merkamail-http.rule=Host(`merkamail.yourdomain.com`)"
+      - "traefik.http.routers.merkamail-http.rule=Host(`merka.153-92-222-204.traefik.me`)"
       - "traefik.http.routers.merkamail-http.entrypoints=web"
-      - "traefik.http.routers.merkamail-http.middlewares=https-redirect"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.merkamail-http.middlewares=merkamail-https"
+      - "traefik.http.middlewares.merkamail-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.merkamail-https.redirectscheme.permanent=true"
 
 volumes:
+  merkamail-postgres:
   merkamail-data:
 
 networks:

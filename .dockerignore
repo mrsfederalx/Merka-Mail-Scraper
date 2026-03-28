@@ -1,0 +1,14 @@
+.env
+.git/
+*.md
+setup.bat
+start.bat
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/data/clients/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.log
