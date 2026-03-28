@@ -31,6 +31,7 @@ from backend.api.social_media import router as social_media_router
 from backend.api.whois_phone import router as whois_phone_router
 from backend.api.export import router as export_router
 from backend.api.csv_merge import router as csv_merge_router
+from backend.api.business import router as business_router
 
 log = get_logger("main")
 
@@ -90,6 +91,7 @@ app.include_router(social_media_router)
 app.include_router(whois_phone_router)
 app.include_router(export_router)
 app.include_router(csv_merge_router)
+app.include_router(business_router)
 
 
 @app.get("/api/health")

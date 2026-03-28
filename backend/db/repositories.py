@@ -685,6 +685,94 @@ class UserRepository:
         return result == "DELETE 1"
 
 
+class BusinessRepository:
+    """CRUD for business (denormalized leads) table."""
+
+    def __init__(self, conn: asyncpg.Connection):
+        self.conn = conn
+
+    async def upsert(self, client_id: int, record: dict) -> None:
+        await self.conn.execute("""
+            INSERT INTO business (
+                client_id, domain_id, domain, status, platform, method,
+                email_1, email_2, email_3, email_4, email_5,
+                email_6, email_7, email_8, email_9, email_10, email_count,
+                facebook, linkedin, twitter, instagram, youtube, other_social,
+                dm1_name, dm1_role, dm1_email, dm1_linkedin, dm1_score,
+                dm2_name, dm2_role, dm2_email, dm2_linkedin, dm2_score,
+                dm3_name, dm3_role, dm3_email, dm3_linkedin, dm3_score,
+                processing_time_ms, processed_at, synced_at
+            ) VALUES (
+                $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
+                $18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,
+                $33,$34,$35,$36,$37,$38,$39,$40,NOW()
+            )
+            ON CONFLICT (client_id, domain) DO UPDATE SET
+                domain_id=$2, status=$4, platform=$5, method=$6,
+                email_1=$7, email_2=$8, email_3=$9, email_4=$10, email_5=$11,
+                email_6=$12, email_7=$13, email_8=$14, email_9=$15, email_10=$16,
+                email_count=$17, facebook=$18, linkedin=$19, twitter=$20,
+                instagram=$21, youtube=$22, other_social=$23,
+                dm1_name=$24, dm1_role=$25, dm1_email=$26, dm1_linkedin=$27, dm1_score=$28,
+                dm2_name=$29, dm2_role=$30, dm2_email=$31, dm2_linkedin=$32, dm2_score=$33,
+                dm3_name=$34, dm3_role=$35, dm3_email=$36, dm3_linkedin=$37, dm3_score=$38,
+                processing_time_ms=$39, processed_at=$40, synced_at=NOW()
+        """,
+            client_id, record.get("domain_id"), record["domain"],
+            record.get("status"), record.get("platform"), record.get("method"),
+            record.get("email_1"), record.get("email_2"), record.get("email_3"),
+            record.get("email_4"), record.get("email_5"), record.get("email_6"),
+            record.get("email_7"), record.get("email_8"), record.get("email_9"),
+            record.get("email_10"), record.get("email_count", 0),
+            record.get("facebook"), record.get("linkedin"), record.get("twitter"),
+            record.get("instagram"), record.get("youtube"), record.get("other_social"),
+            record.get("dm1_name"), record.get("dm1_role"), record.get("dm1_email"),
+            record.get("dm1_linkedin"), record.get("dm1_score"),
+            record.get("dm2_name"), record.get("dm2_role"), record.get("dm2_email"),
+            record.get("dm2_linkedin"), record.get("dm2_score"),
+            record.get("dm3_name"), record.get("dm3_role"), record.get("dm3_email"),
+            record.get("dm3_linkedin"), record.get("dm3_score"),
+            record.get("processing_time_ms"), record.get("processed_at"),
+        )
+
+    async def get_filtered(
+        self,
+        client_id: int,
+        search: Optional[str] = None,
+        status: Optional[str] = None,
+        page: int = 1,
+        limit: int = 50,
+    ) -> tuple[list[dict], int]:
+        conditions = ["client_id = $1"]
+        params: list = [client_id]
+        idx = 2
+        if search:
+            conditions.append(f"(domain ILIKE ${idx} OR email_1 ILIKE ${idx} OR email_2 ILIKE ${idx})")
+            params.append(f"%{search}%"); idx += 1
+        if status:
+            conditions.append(f"status = ${idx}")
+            params.append(status); idx += 1
+        where = " WHERE " + " AND ".join(conditions)
+        offset = (page - 1) * limit
+        count_row = await self.conn.fetchrow(f"SELECT COUNT(*) as cnt FROM business{where}", *params)
+        total = count_row["cnt"] if count_row else 0
+        rows = await self.conn.fetch(
+            f"SELECT * FROM business{where} ORDER BY id DESC LIMIT ${idx} OFFSET ${idx+1}",
+            *params, limit, offset,
+        )
+        return [dict(r) for r in rows], total
+
+    async def get_all(self, client_id: int) -> list[dict]:
+        rows = await self.conn.fetch(
+            "SELECT * FROM business WHERE client_id=$1 ORDER BY id DESC", client_id
+        )
+        return [dict(r) for r in rows]
+
+    async def delete_by_client(self, client_id: int) -> int:
+        result = await self.conn.execute("DELETE FROM business WHERE client_id=$1", client_id)
+        return int(result.split()[-1])
+
+
 class RefreshTokenRepository:
     """CRUD for refresh_tokens table."""
 

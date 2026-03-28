@@ -1,6 +1,6 @@
 """PostgreSQL schema definition."""
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # Default blacklist seeds
 DEFAULT_BLACKLIST_EMAILS = [
@@ -190,4 +190,34 @@ CREATE TABLE IF NOT EXISTS blacklist_domains (
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE(client_id, domain)
 );
+"""
+
+BUSINESS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS business (
+    id                  SERIAL PRIMARY KEY,
+    client_id           INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+    domain_id           INTEGER REFERENCES domains(id) ON DELETE SET NULL,
+    domain              TEXT NOT NULL,
+    status              TEXT,
+    platform            TEXT,
+    method              TEXT,
+    email_1             TEXT, email_2  TEXT, email_3  TEXT, email_4  TEXT, email_5  TEXT,
+    email_6             TEXT, email_7  TEXT, email_8  TEXT, email_9  TEXT, email_10 TEXT,
+    email_count         INTEGER DEFAULT 0,
+    facebook            TEXT,
+    linkedin            TEXT,
+    twitter             TEXT,
+    instagram           TEXT,
+    youtube             TEXT,
+    other_social        TEXT,
+    dm1_name            TEXT, dm1_role TEXT, dm1_email TEXT, dm1_linkedin TEXT, dm1_score INTEGER,
+    dm2_name            TEXT, dm2_role TEXT, dm2_email TEXT, dm2_linkedin TEXT, dm2_score INTEGER,
+    dm3_name            TEXT, dm3_role TEXT, dm3_email TEXT, dm3_linkedin TEXT, dm3_score INTEGER,
+    processing_time_ms  INTEGER,
+    processed_at        TIMESTAMP,
+    synced_at           TIMESTAMP DEFAULT NOW(),
+    UNIQUE(client_id, domain)
+);
+CREATE INDEX IF NOT EXISTS idx_business_client_id ON business(client_id);
+CREATE INDEX IF NOT EXISTS idx_business_domain    ON business(domain);
 """

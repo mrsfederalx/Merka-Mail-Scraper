@@ -2,7 +2,7 @@
 
 import asyncpg
 from backend.db.schema import (
-    CREATE_TABLES_SQL, SCHEMA_VERSION,
+    CREATE_TABLES_SQL, SCHEMA_VERSION, BUSINESS_TABLE_SQL,
     DEFAULT_BLACKLIST_EMAILS, DEFAULT_BLACKLIST_DOMAINS,
 )
 from backend.config import get_settings
@@ -14,8 +14,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds
 
 # Future migrations: add SQL per version number
 MIGRATIONS: dict[int, list[str]] = {
-    # Example:
-    # 2: ["ALTER TABLE users ADD COLUMN phone TEXT;"],
+    2: [BUSINESS_TABLE_SQL],
 }
 
 
