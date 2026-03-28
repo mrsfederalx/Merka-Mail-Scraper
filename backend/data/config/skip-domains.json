@@ -1,0 +1,7 @@
+{
+  "domains": [
+    "mypec.com",
+    "numotion.com"
+  ],
+  "reason": "Known timeout-prone or problematic domains"
+}

@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "api_keys": {
+    "gemini_api_key": "",
+    "groq_api_key": "",
+    "ollama_url": "http://localhost:11434"
+  },
+  "processing": {
+    "default_delay_ms": 3000,
+    "default_concurrency": 3,
+    "default_timeout_ms": 30000,
+    "max_retries": 2,
+    "playwright_timeout_ms": 60000,
+    "contact_page_timeout_ms": 30000
+  },
+  "proxy": {
+    "enabled": false,
+    "proxy_list": [],
+    "rotation_strategy": "round_robin"
+  },
+  "ai_classification": {
+    "enabled": true,
+    "provider_priority": ["gemini", "groq", "ollama"],
+    "batch_size": 10,
+    "max_html_context_chars": 500
+  },
+  "email_discovery": {
+    "smtp_timeout_seconds": 10,
+    "max_patterns_per_name": 8,
+    "verify_catch_all": true
+  },
+  "linkedin_dorking": {
+    "rate_limit_seconds": 5,
+    "max_results_per_search": 20,
+    "default_roles": ["CEO", "Owner", "Founder", "Director", "Manager"]
+  }
+}

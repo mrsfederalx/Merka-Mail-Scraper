@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 15, 20, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.5);
+}
+
+/* Glass morphism utilities */
+@layer utilities {
+  .glass {
+    @apply bg-gray-900/50 backdrop-blur-xl border border-gray-800/50;
+  }
+
+  .glass-strong {
+    @apply bg-gray-900/80 backdrop-blur-xl border border-gray-800/50;
+  }
+
+  .gradient-border {
+    @apply border border-transparent;
+    background-clip: padding-box;
+  }
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+/* Terminal styles */
+.terminal-line {
+  @apply font-mono text-xs leading-relaxed;
+}
+
+.terminal-line.success { @apply text-emerald-400; }
+.terminal-line.error { @apply text-red-400; }
+.terminal-line.warning { @apply text-amber-400; }
+.terminal-line.info { @apply text-cyan-400; }
+.terminal-line.debug { @apply text-gray-500; }
+
+/* Smooth transitions */
+* {
+  scrollbar-color: rgba(34, 211, 238, 0.3) rgba(15, 15, 20, 0.5);
+}
+
+body {
+  @apply bg-gray-950 text-gray-100 antialiased;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Selection */
+::selection {
+  @apply bg-cyan-500/30 text-white;
+}

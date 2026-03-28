@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: merkamail-backend
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - merkamail-data:/app/data
+    networks:
+      - dokploy-network
+      - merkamail-internal
+    labels:
+      - "traefik.enable=false"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: merkamail-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - merkamail-internal
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.merkamail.rule=Host(`merkamail.yourdomain.com`)"
+      - "traefik.http.routers.merkamail.entrypoints=websecure"
+      - "traefik.http.routers.merkamail.tls.certresolver=letsencrypt"
+      - "traefik.http.services.merkamail.loadbalancer.server.port=80"
+      - "traefik.http.routers.merkamail-http.rule=Host(`merkamail.yourdomain.com`)"
+      - "traefik.http.routers.merkamail-http.entrypoints=web"
+      - "traefik.http.routers.merkamail-http.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+
+volumes:
+  merkamail-data:
+
+networks:
+  dokploy-network:
+    external: true
+  merkamail-internal:
+    driver: bridge

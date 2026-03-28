@@ -1,0 +1,47 @@
+[
+  {
+    "selector": "a[href^='mailto:']",
+    "description": "Direct mailto links",
+    "priority": 10,
+    "attribute": "href",
+    "extract_pattern": "mailto:(.+)"
+  },
+  {
+    "selector": "a.elementor-social-icon-envelope[href^='mailto:']",
+    "description": "Elementor social icon envelope links",
+    "priority": 9,
+    "attribute": "href",
+    "extract_pattern": "mailto:(.+)"
+  },
+  {
+    "selector": ".elementor-icon-list-item a[href^='mailto:']",
+    "description": "Elementor icon list mailto links",
+    "priority": 8,
+    "attribute": "href",
+    "extract_pattern": "mailto:(.+)"
+  },
+  {
+    "selector": "[data-email]",
+    "description": "Elements with data-email attribute",
+    "priority": 7,
+    "attribute": "data-email"
+  },
+  {
+    "selector": "[data-mail]",
+    "description": "Elements with data-mail attribute",
+    "priority": 6,
+    "attribute": "data-mail"
+  },
+  {
+    "selector": ".contact-email, .email, .e-mail",
+    "description": "Common email CSS classes",
+    "priority": 5
+  },
+  {
+    "selector": "footer a[href^='mailto:']",
+    "description": "Footer mailto links",
+    "priority": 4,
+    "attribute": "href",
+    "extract_pattern": "mailto:(.+)"
+  }
+]

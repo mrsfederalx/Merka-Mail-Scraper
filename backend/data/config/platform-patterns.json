@@ -1,0 +1,94 @@
+{
+  "platforms": [
+    {
+      "name": "Shopify",
+      "signatures": {
+        "headers": ["x-shopify-stage", "x-shopid"],
+        "meta_tags": ["shopify"],
+        "scripts": ["cdn.shopify.com"],
+        "dom_elements": [".shopify-section", "#shopify-digital-wallet"]
+      }
+    },
+    {
+      "name": "WordPress",
+      "signatures": {
+        "headers": [],
+        "meta_tags": ["WordPress"],
+        "scripts": ["wp-content", "wp-includes"],
+        "dom_elements": [".wp-block", "#wpadminbar"]
+      }
+    },
+    {
+      "name": "WooCommerce",
+      "signatures": {
+        "headers": [],
+        "meta_tags": ["WooCommerce"],
+        "scripts": ["woocommerce", "wc-"],
+        "dom_elements": [".woocommerce", ".wc-block"]
+      }
+    },
+    {
+      "name": "Wix",
+      "signatures": {
+        "headers": ["x-wix-request-id"],
+        "meta_tags": ["Wix.com"],
+        "scripts": ["static.wixstatic.com", "parastorage.com"],
+        "dom_elements": ["[data-mesh-id]", "[data-testid='mesh-container']"]
+      }
+    },
+    {
+      "name": "Squarespace",
+      "signatures": {
+        "headers": ["x-servedby"],
+        "meta_tags": ["Squarespace"],
+        "scripts": ["squarespace.com"],
+        "dom_elements": [".sqs-block", "[data-squarespace-cacheversion]"]
+      }
+    },
+    {
+      "name": "Magento",
+      "signatures": {
+        "headers": [],
+        "meta_tags": ["Magento"],
+        "scripts": ["mage/", "requirejs"],
+        "dom_elements": [".page-wrapper", "[data-mage-init]"]
+      }
+    },
+    {
+      "name": "Ikas",
+      "signatures": {
+        "headers": [],
+        "meta_tags": ["ikas"],
+        "scripts": ["ikas.com"],
+        "dom_elements": []
+      }
+    },
+    {
+      "name": "Ticimax",
+      "signatures": {
+        "headers": [],
+        "meta_tags": ["Ticimax"],
+        "scripts": ["ticimax"],
+        "dom_elements": []
+      }
+    },
+    {
+      "name": "OpenCart",
+      "signatures": {
+        "headers": [],
+        "meta_tags": [],
+        "scripts": ["catalog/view"],
+        "dom_elements": ["#column-left", "#column-right"]
+      }
+    },
+    {
+      "name": "IdeasSoft",
+      "signatures": {
+        "headers": [],
+        "meta_tags": ["IdeasSoft"],
+        "scripts": ["ideasoft"],
+        "dom_elements": []
+      }
+    }
+  ]
+}
