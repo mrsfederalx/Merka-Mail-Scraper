@@ -1,6 +1,6 @@
 """PostgreSQL schema definition."""
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # Default blacklist seeds
 DEFAULT_BLACKLIST_EMAILS = [
@@ -191,6 +191,75 @@ CREATE TABLE IF NOT EXISTS blacklist_domains (
     UNIQUE(client_id, domain)
 );
 """
+
+LEADS_VIEW_SQL = """
+CREATE OR REPLACE VIEW leads AS
+SELECT
+    d.id                                                        AS domain_id,
+    c.name                                                      AS client,
+    d.domain,
+    d.status,
+    d.platform,
+    d.method,
+    d.has_cloudflare,
+    d.processing_time_ms,
+    d.processed_at,
+
+    -- Emails (max 10)
+    MAX(CASE WHEN e.rn = 1  THEN e.email END)                  AS email_1,
+    MAX(CASE WHEN e.rn = 2  THEN e.email END)                  AS email_2,
+    MAX(CASE WHEN e.rn = 3  THEN e.email END)                  AS email_3,
+    MAX(CASE WHEN e.rn = 4  THEN e.email END)                  AS email_4,
+    MAX(CASE WHEN e.rn = 5  THEN e.email END)                  AS email_5,
+    MAX(CASE WHEN e.rn = 6  THEN e.email END)                  AS email_6,
+    MAX(CASE WHEN e.rn = 7  THEN e.email END)                  AS email_7,
+    MAX(CASE WHEN e.rn = 8  THEN e.email END)                  AS email_8,
+    MAX(CASE WHEN e.rn = 9  THEN e.email END)                  AS email_9,
+    MAX(CASE WHEN e.rn = 10 THEN e.email END)                  AS email_10,
+    COUNT(DISTINCT e.email_id)                                  AS email_count,
+
+    -- Social media
+    MAX(CASE WHEN sl.platform = 'facebook'  THEN sl.url END)   AS facebook,
+    MAX(CASE WHEN sl.platform = 'linkedin'  THEN sl.url END)   AS linkedin,
+    MAX(CASE WHEN sl.platform = 'twitter'   THEN sl.url END)   AS twitter,
+    MAX(CASE WHEN sl.platform = 'instagram' THEN sl.url END)   AS instagram,
+    MAX(CASE WHEN sl.platform = 'youtube'   THEN sl.url END)   AS youtube,
+
+    -- Decision Makers (max 3)
+    MAX(CASE WHEN ct.rn = 1 THEN ct.full_name   END)           AS dm1_name,
+    MAX(CASE WHEN ct.rn = 1 THEN ct.role        END)           AS dm1_role,
+    MAX(CASE WHEN ct.rn = 1 THEN ct.email_found END)           AS dm1_email,
+    MAX(CASE WHEN ct.rn = 1 THEN ct.linkedin_url END)          AS dm1_linkedin,
+    MAX(CASE WHEN ct.rn = 2 THEN ct.full_name   END)           AS dm2_name,
+    MAX(CASE WHEN ct.rn = 2 THEN ct.role        END)           AS dm2_role,
+    MAX(CASE WHEN ct.rn = 2 THEN ct.email_found END)           AS dm2_email,
+    MAX(CASE WHEN ct.rn = 2 THEN ct.linkedin_url END)          AS dm2_linkedin,
+    MAX(CASE WHEN ct.rn = 3 THEN ct.full_name   END)           AS dm3_name,
+    MAX(CASE WHEN ct.rn = 3 THEN ct.role        END)           AS dm3_role,
+    MAX(CASE WHEN ct.rn = 3 THEN ct.email_found END)           AS dm3_email,
+    MAX(CASE WHEN ct.rn = 3 THEN ct.linkedin_url END)          AS dm3_linkedin
+
+FROM domains d
+JOIN clients c ON c.id = d.client_id
+
+LEFT JOIN (
+    SELECT id AS email_id, domain_id, email,
+           ROW_NUMBER() OVER (PARTITION BY domain_id ORDER BY tier ASC NULLS LAST, confidence DESC NULLS LAST) AS rn
+    FROM emails
+) e ON e.domain_id = d.id AND e.rn <= 10
+
+LEFT JOIN social_links sl ON sl.domain_id = d.id
+
+LEFT JOIN (
+    SELECT id, domain_id, full_name, role, email_found, linkedin_url,
+           ROW_NUMBER() OVER (PARTITION BY domain_id ORDER BY score DESC) AS rn
+    FROM contacts
+) ct ON ct.domain_id = d.id AND ct.rn <= 3
+
+GROUP BY d.id, c.name, d.domain, d.status, d.platform, d.method,
+         d.has_cloudflare, d.processing_time_ms, d.processed_at
+ORDER BY d.id DESC;
+""";
 
 BUSINESS_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS business (
