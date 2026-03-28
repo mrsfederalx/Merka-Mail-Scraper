@@ -49,11 +49,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.merkamail.rule=Host(`merka.153-92-222-204.traefik.me`)"
+      - "traefik.http.routers.merkamail.rule=Host(`merka-mail-screper-merkamailscreper-u7ea-048b55-153-92-222-204.traefik.me`)"
       - "traefik.http.routers.merkamail.entrypoints=websecure"
       - "traefik.http.routers.merkamail.tls.certresolver=letsencrypt"
       - "traefik.http.services.merkamail.loadbalancer.server.port=80"
-      - "traefik.http.routers.merkamail-http.rule=Host(`merka.153-92-222-204.traefik.me`)"
+      - "traefik.http.routers.merkamail-http.rule=Host(`merka-mail-screper-merkamailscreper-u7ea-048b55-153-92-222-204.traefik.me`)"
       - "traefik.http.routers.merkamail-http.entrypoints=web"
       - "traefik.http.routers.merkamail-http.middlewares=merkamail-https"
       - "traefik.http.middlewares.merkamail-https.redirectscheme.scheme=https"
