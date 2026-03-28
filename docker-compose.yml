@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-merkapass123}
     volumes:
       - merkamail-postgres:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
     networks:
       - merkamail-internal
     healthcheck:
