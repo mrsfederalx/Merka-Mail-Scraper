@@ -1,18 +1,13 @@
 import { useState, useCallback, useRef } from 'react'
-import axios from 'axios'
 import {
   Upload, FileSpreadsheet, Download, Loader2, AlertCircle,
   CheckCircle, XCircle, Table2, Merge, Search,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import StatCard from '../layout/StatCard'
+import api from '../../api/client'
 
-const longApi = axios.create({ baseURL: '/api', timeout: 600000 })
-longApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+const LONG_TIMEOUT = 600000
 
 interface PreviewData {
   columns: string[]
@@ -57,7 +52,7 @@ export default function CSVMerge() {
       const formData = new FormData()
       formData.append('file', selectedFile)
 
-      const res = await longApi.post('/csv-merge/preview', formData)
+      const res = await api.post('/csv-merge/preview', formData, { timeout: LONG_TIMEOUT })
       if (res.data.success) {
         const previewData = res.data.data as PreviewData
         setPreview(previewData)
@@ -70,7 +65,7 @@ export default function CSVMerge() {
         statsForm.append('file', selectedFile)
         statsForm.append('domain_column', previewData.domain_column || 'website')
 
-        const statsRes = await longApi.post('/csv-merge/stats', statsForm)
+        const statsRes = await api.post('/csv-merge/stats', statsForm, { timeout: LONG_TIMEOUT })
         if (statsRes.data.success) {
           setStats(statsRes.data.data)
         }
@@ -111,8 +106,9 @@ export default function CSVMerge() {
       formData.append('file', file)
       formData.append('domain_column', domainColumn)
 
-      const res = await longApi.post('/csv-merge/merge', formData, {
+      const res = await api.post('/csv-merge/merge', formData, {
         responseType: 'blob',
+        timeout: LONG_TIMEOUT,
       })
 
       // Download

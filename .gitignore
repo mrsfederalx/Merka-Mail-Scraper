@@ -40,3 +40,6 @@ frontend/.vite/
 # OS
 .DS_Store
 Thumbs.db
+
+# Private archive (repoya atılmaz)
+_archive/

@@ -58,6 +58,51 @@ async def preview_csv(file: UploadFile = File(...), current_user: dict = Depends
         return {"success": False, "error": str(e)}
 
 
+@router.post("/stats")
+async def stats_csv(
+    file: UploadFile = File(...),
+    domain_column: str = Form(default="website"),
+    current_user: dict = Depends(get_current_user),
+):
+    client_id = get_client_id(current_user)
+    try:
+        content = await file.read()
+        text = content.decode("utf-8-sig")
+        reader = csv.DictReader(io.StringIO(text))
+        csv_rows = list(reader)
+        if not csv_rows:
+            return {"success": False, "error": "CSV dosyasi bos"}
+
+        pool = await get_pool()
+        async with pool.acquire() as conn:
+            db_lookup = await _get_db_data_by_domain(conn, client_id)
+
+        matched = 0
+        total_emails = 0
+        total_contacts = 0
+        for row in csv_rows:
+            domain = _normalize_domain(row.get(domain_column, ""))
+            db_data = db_lookup.get(domain)
+            if db_data:
+                matched += 1
+                total_emails += len(db_data.get("emails", []))
+                total_contacts += len(db_data.get("contacts", []))
+
+        return {
+            "success": True,
+            "data": {
+                "total_csv_rows": len(csv_rows),
+                "matched_domains": matched,
+                "unmatched_domains": len(csv_rows) - matched,
+                "total_emails_in_db": total_emails,
+                "total_contacts_in_db": total_contacts,
+                "db_domains_total": len(db_lookup),
+            },
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @router.post("/merge")
 async def merge_csv(
     file: UploadFile = File(...),
