@@ -1,13 +1,51 @@
 import { useState, useCallback, useRef } from 'react'
+import axios from 'axios'
 import {
   Upload, FileSpreadsheet, Download, Loader2, AlertCircle,
   CheckCircle, XCircle, Table2, Merge, Search,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import StatCard from '../layout/StatCard'
-import api from '../../api/client'
 
-const LONG_TIMEOUT = 600000
+// Separate axios instance for multipart uploads:
+// - No default Content-Type (browser sets multipart/form-data with boundary automatically)
+// - Long timeout for large files
+// - 401 → refresh token → retry
+const longApi = axios.create({ baseURL: '/api', timeout: 600000 })
+
+longApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+longApi.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (!refreshToken) {
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+      try {
+        const { data } = await axios.post('/api/auth/refresh', { refresh_token: refreshToken })
+        localStorage.setItem('access_token', data.access_token)
+        localStorage.setItem('refresh_token', data.refresh_token)
+        original.headers.Authorization = `Bearer ${data.access_token}`
+        return longApi(original)
+      } catch {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 interface PreviewData {
   columns: string[]
@@ -52,7 +90,7 @@ export default function CSVMerge() {
       const formData = new FormData()
       formData.append('file', selectedFile)
 
-      const res = await api.post('/csv-merge/preview', formData, { timeout: LONG_TIMEOUT })
+      const res = await longApi.post('/csv-merge/preview', formData)
       if (res.data.success) {
         const previewData = res.data.data as PreviewData
         setPreview(previewData)
@@ -65,7 +103,7 @@ export default function CSVMerge() {
         statsForm.append('file', selectedFile)
         statsForm.append('domain_column', previewData.domain_column || 'website')
 
-        const statsRes = await api.post('/csv-merge/stats', statsForm, { timeout: LONG_TIMEOUT })
+        const statsRes = await longApi.post('/csv-merge/stats', statsForm)
         if (statsRes.data.success) {
           setStats(statsRes.data.data)
         }
@@ -106,9 +144,8 @@ export default function CSVMerge() {
       formData.append('file', file)
       formData.append('domain_column', domainColumn)
 
-      const res = await api.post('/csv-merge/merge', formData, {
+      const res = await longApi.post('/csv-merge/merge', formData, {
         responseType: 'blob',
-        timeout: LONG_TIMEOUT,
       })
 
       // Download
