@@ -66,7 +66,29 @@ export default function DomainProcessing() {
     const reader = new FileReader()
     reader.onload = (ev) => {
       const text = ev.target?.result as string
-      setDomainText((prev) => (prev ? prev + '\n' : '') + text)
+      const lines = text.split(/\r?\n/).filter((l) => l.trim())
+      if (lines.length === 0) return
+
+      const parseCSVLine = (line: string) =>
+        line.split(',').map((col) => col.trim().replace(/^"|"$/g, ''))
+
+      const headers = parseCSVLine(lines[0]).map((h) => h.toLowerCase())
+      const domainKeywords = ['domain', 'website', 'url', 'site', 'web', 'host']
+      const colIndex = headers.findIndex((h) => domainKeywords.some((k) => h.includes(k)))
+
+      let domains: string[]
+      if (colIndex !== -1) {
+        domains = lines.slice(1)
+          .map((line) => parseCSVLine(line)[colIndex] ?? '')
+          .filter((d) => d.length > 0)
+      } else {
+        // Fallback: first column
+        domains = lines.slice(1)
+          .map((line) => parseCSVLine(line)[0] ?? '')
+          .filter((d) => d.length > 0)
+      }
+
+      setDomainText((prev) => (prev ? prev + '\n' : '') + domains.join('\n'))
     }
     reader.readAsText(file)
   }
@@ -157,10 +179,10 @@ export default function DomainProcessing() {
                                bg-gray-800 hover:bg-gray-700 cursor-pointer
                                text-xs text-gray-400 hover:text-gray-200 transition-colors">
                 <Upload size={14} />
-                Upload .txt
+                Upload .csv
                 <input
                   type="file"
-                  accept=".txt,.csv"
+                  accept=".csv"
                   className="hidden"
                   onChange={handleFileUpload}
                 />
